@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWS Evidence - Real API Capture v7</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f5f5f5; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; margin: -30px -30px 30px -30px; border-radius: 8px 8px 0 0; }
+        .code-block { background-color: #2d3748; color: #e2e8f0; padding: 20px; border-radius: 5px; font-family: 'Consolas', 'Monaco', monospace; font-size: 14px; line-height: 1.6; overflow-x: auto; }
+        .copy-button { background-color: #007bff; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin: 10px 0; }
+        .copy-button:hover { background-color: #0056b3; }
+        .success { background-color: #d4edda; color: #155724; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        .warning { background-color: #fff3cd; color: #856404; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        .step { margin: 20px 0; padding: 20px; border-left: 4px solid #007bff; background-color: #f8f9ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 AWS Evidence - Real API Capture v7</h1>
+            <p><strong>実際のAWS操作をキャプチャ</strong></p>
+        </div>
+        
+        <div class="success">
+            <h3>✅ v7の特徴:</h3>
+            <ul>
+                <li><strong>リアルタイム監視</strong> - 手動操作時のAPI呼び出しをキャプチャ</li>
+                <li><strong>完全なリクエスト情報</strong> - URL, ヘッダー, ボディを記録</li>
+                <li><strong>エビデンス生成準備</strong> - 実際の処理フローを把握</li>
+                <li><strong>企業環境対応</strong> - AWSコンソール内実行で制限回避</li>
+            </ul>
+        </div>
+
+        <div class="step">
+            <h3>📋 ステップ1: API監視開始</h3>
+            <p>AWSコンソール上でF12→Consoleを開き、以下のコードを実行:</p>
+            
+            <button class="copy-button" onclick="copyCode('monitor-start')">📋 監視開始コードをコピー</button>
+            
+            <div class="code-block" id="monitor-start">
+console.log('=== AWS Real API Capture v7 ===');
+
+const apiCalls = [];
+
+function startRealAPIMonitoring() {
+    const originalFetch = window.fetch;
+    const originalXHROpen = XMLHttpRequest.prototype.open;
+    const originalXHRSend = XMLHttpRequest.prototype.send;
+    
+    window.fetch = function(...args) {
+        const [url, options] = args;
+        logAPICall('FETCH', url, options);
+        return originalFetch.apply(this, args);
+    };
+    
+    XMLHttpRequest.prototype.open = function(method, url, ...rest) {
+        this._method = method;
+        this._url = url;
+        logAPICall('XHR', url, { method });
+        return originalXHROpen.apply(this, [method, url, ...rest]);
+    };
+    
+    XMLHttpRequest.prototype.send = function(data) {
+        if (this._url) {
+            logAPICall('XHR-SEND', this._url, { 
+                method: this._method, 
+                body: data 
+            });
+        }
+        return originalXHRSend.apply(this, arguments);
+    };
+    
+    console.log('✅ Real-time API monitoring started');
+    console.log('Now navigate to AWS services and perform operations');
+    
+    return {
+        originalFetch,
+        originalXHROpen,
+        originalXHRSend
+    };
+}
+
+function logAPICall(type, url, options) {
+    if (isAWSRelated(url)) {
+        const callInfo = {
+            type,
+            url,
+            method: options?.method || 'GET',
+            headers: options?.headers || {},
+            body: options?.body || null,
+            timestamp: new Date().toISOString(),
+            service: detectAWSService(url)
+        };
+        
+        apiCalls.push(callInfo);
+        
+        console.log(`🌐 [${type}] ${callInfo.service?.toUpperCase() || 'AWS'}`);
+        console.log(`   URL: ${url}`);
+        console.log(`   Method: ${callInfo.method}`);
+        if (options?.headers) {
+            console.log(`   Headers:`, options.headers);
+        }
+        if (options?.body && options.body.length < 500) {
+            console.log(`   Body:`, options.body);
+        }
+        console.log(`   Time: ${callInfo.timestamp}`);
+        console.log('---');
+    }
+}
+
+function isAWSRelated(url) {
+    return url.includes('amazonaws.com') ||
+           url.includes('console.aws.amazon.com') ||
+           url.includes('/api/') ||
+           url.includes('sts') ||
+           url.includes('s3') ||
+           url.includes('ec2') ||
+           url.includes('lambda') ||
+           url.includes('cloudwatch') ||
+           url.includes('stepfunctions');
+}
+
+function detectAWSService(url) {
+    if (url.includes('s3')) return 's3';
+    if (url.includes('ec2')) return 'ec2';
+    if (url.includes('lambda')) return 'lambda';
+    if (url.includes('sts')) return 'sts';
+    if (url.includes('cloudwatch') || url.includes('logs')) return 'cloudwatch';
+    if (url.includes('stepfunctions')) return 'stepfunctions';
+    if (url.includes('iam')) return 'iam';
+    return 'aws';
+}
+
+const originals = startRealAPIMonitoring();
+            </div>
+        </div>
+
+        <div class="step">
+            <h3>🎯 ステップ2: AWS操作実行</h3>
+            <p>監視開始後、実際にAWSサービスを操作してください:</p>
+            <ul>
+                <li><strong>S3:</strong> バケット一覧表示、ファイルリスト取得</li>
+                <li><strong>EC2:</strong> インスタンス一覧表示</li>
+                <li><strong>Lambda:</strong> 関数一覧表示</li>
+                <li><strong>CloudWatch:</strong> ログ取得</li>
+                <li><strong>Step Functions:</strong> 実行履歴確認</li>
+            </ul>
+        </div>
+
+        <div class="step">
+            <h3>📊 ステップ3: 結果確認・エクスポート</h3>
+            
+            <button class="copy-button" onclick="copyCode('export-results')">📋 結果確認コードをコピー</button>
+            
+            <div class="code-block" id="export-results">
+function showCapturedAPIs() {
+    console.log(`=== Captured ${apiCalls.length} API calls ===`);
+    
+    const serviceGroups = {};
+    apiCalls.forEach(call => {
+        const service = call.service || 'unknown';
+        if (!serviceGroups[service]) serviceGroups[service] = [];
+        serviceGroups[service].push(call);
+    });
+    
+    Object.entries(serviceGroups).forEach(([service, calls]) => {
+        console.log(`\n📋 ${service.toUpperCase()} Service (${calls.length} calls):`);
+        calls.forEach((call, index) => {
+            console.log(`  ${index + 1}. [${call.method}] ${call.url}`);
+            if (call.body) {
+                console.log(`     Body: ${call.body.substring(0, 100)}...`);
+            }
+        });
+    });
+    
+    return serviceGroups;
+}
+
+function exportToJSON() {
+    const exportData = {
+        captureTime: new Date().toISOString(),
+        totalCalls: apiCalls.length,
+        services: {}
+    };
+    
+    apiCalls.forEach(call => {
+        const service = call.service || 'unknown';
+        if (!exportData.services[service]) {
+            exportData.services[service] = [];
+        }
+        exportData.services[service].push(call);
+    });
+    
+    const jsonStr = JSON.stringify(exportData, null, 2);
+    console.log('📁 Export JSON:');
+    console.log(jsonStr);
+    
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `aws-api-capture-${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    return exportData;
+}
+
+function stopMonitoring() {
+    if (originals) {
+        window.fetch = originals.originalFetch;
+        XMLHttpRequest.prototype.open = originals.originalXHROpen;
+        XMLHttpRequest.prototype.send = originals.originalXHRSend;
+        console.log('🛑 Monitoring stopped');
+    }
+}
+
+console.log('Available commands:');
+console.log('- showCapturedAPIs() : 取得したAPI一覧を表示');
+console.log('- exportToJSON()     : JSON形式でエクスポート');
+console.log('- stopMonitoring()   : 監視を停止');
+            </div>
+        </div>
+
+        <div class="step">
+            <h3>🔧 ステップ4: エビデンス生成</h3>
+            
+            <button class="copy-button" onclick="copyCode('generate-evidence')">📋 エビデンス生成コードをコピー</button>
+            
+            <div class="code-block" id="generate-evidence">
+function generateEvidenceReport() {
+    const report = {
+        title: 'AWS Evidence Collection Report',
+        generatedAt: new Date().toISOString(),
+        summary: {
+            totalAPICalls: apiCalls.length,
+            servicesUsed: [...new Set(apiCalls.map(call => call.service))],
+            timeRange: {
+                start: apiCalls[0]?.timestamp,
+                end: apiCalls[apiCalls.length - 1]?.timestamp
+            }
+        },
+        details: {}
+    };
+    
+    const services = [...new Set(apiCalls.map(call => call.service))];
+    
+    services.forEach(service => {
+        const serviceCalls = apiCalls.filter(call => call.service === service);
+        report.details[service] = {
+            callCount: serviceCalls.length,
+            operations: serviceCalls.map(call => ({
+                method: call.method,
+                url: call.url,
+                timestamp: call.timestamp,
+                hasBody: !!call.body,
+                bodyPreview: call.body ? call.body.substring(0, 100) : null
+            }))
+        };
+    });
+    
+    console.log('📋 Evidence Report Generated:');
+    console.log(report);
+    
+    const htmlReport = generateHTMLReport(report);
+    const blob = new Blob([htmlReport], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `aws-evidence-report-${new Date().toISOString().split('T')[0]}.html`;
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    return report;
+}
+
+function generateHTMLReport(report) {
+    return `
+<!DOCTYPE html>
+<html>
+<head>
+    <title>${report.title}</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .header { background: #007bff; color: white; padding: 20px; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }
+        .api-call { margin: 10px 0; padding: 10px; background: #f8f9fa; }
+        .timestamp { color: #666; font-size: 0.9em; }
+        pre { background: #f1f1f1; padding: 10px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>${report.title}</h1>
+        <p>Generated: ${report.generatedAt}</p>
+    </div>
+    
+    <div class="section">
+        <h2>Summary</h2>
+        <p>Total API Calls: ${report.summary.totalAPICalls}</p>
+        <p>Services Used: ${report.summary.servicesUsed.join(', ')}</p>
+        <p>Time Range: ${report.summary.timeRange.start} - ${report.summary.timeRange.end}</p>
+    </div>
+    
+    ${Object.entries(report.details).map(([service, data]) => `
+        <div class="section">
+            <h2>${service.toUpperCase()} Service</h2>
+            <p>Total Calls: ${data.callCount}</p>
+            ${data.operations.map(op => `
+                <div class="api-call">
+                    <strong>[${op.method}]</strong> ${op.url}
+                    <div class="timestamp">${op.timestamp}</div>
+                    ${op.bodyPreview ? `<pre>${op.bodyPreview}...</pre>` : ''}
+                </div>
+            `).join('')}
+        </div>
+    `).join('')}
+</body>
+</html>`;
+}
+
+console.log('Available evidence commands:');
+console.log('- generateEvidenceReport() : HTMLエビデンスレポート生成');
+            </div>
+        </div>
+
+        <div class="warning">
+            <h3>⚠️ 使用上の注意:</h3>
+            <ul>
+                <li>AWSコンソール内でのみ実行してください</li>
+                <li>実際にAWSサービスを操作してからAPI確認してください</li>
+                <li>監視停止を忘れずに実行してください（パフォーマンス影響回避）</li>
+                <li>生成されたエビデンスファイルは自動ダウンロードされます</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function copyCode(elementId) {
+            const codeElement = document.getElementById(elementId);
+            const text = codeElement.textContent;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                const button = event.target;
+                const originalText = button.textContent;
+                button.textContent = '✅ コピー完了!';
+                button.style.backgroundColor = '#28a745';
+                
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.style.backgroundColor = '#007bff';
+                }, 2000);
+            }).catch(() => {
+                alert('手動でコードを選択してコピーしてください');
+            });
+        }
+    </script>
+</body>
+</html>
