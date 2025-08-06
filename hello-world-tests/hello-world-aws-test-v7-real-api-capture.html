@@ -201,7 +201,7 @@ function exportToJSON() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `aws-api-capture-${new Date().toISOString().split('T')[0]}.json`;
+    a.download = 'aws-api-capture-' + new Date().toISOString().split('T')[0] + '.json';
     a.click();
     URL.revokeObjectURL(url);
     
@@ -269,7 +269,7 @@ function generateEvidenceReport() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `aws-evidence-report-${new Date().toISOString().split('T')[0]}.html`;
+    a.download = 'aws-evidence-report-' + new Date().toISOString().split('T')[0] + '.html';
     a.click();
     URL.revokeObjectURL(url);
     
