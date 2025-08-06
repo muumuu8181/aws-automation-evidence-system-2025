@@ -277,48 +277,49 @@ function generateEvidenceReport() {
 }
 
 function generateHTMLReport(report) {
-    return `
-<!DOCTYPE html>
-<html>
-<head>
-    <title>${report.title}</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .header { background: #007bff; color: white; padding: 20px; }
-        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }
-        .api-call { margin: 10px 0; padding: 10px; background: #f8f9fa; }
-        .timestamp { color: #666; font-size: 0.9em; }
-        pre { background: #f1f1f1; padding: 10px; overflow-x: auto; }
-    </style>
-</head>
-<body>
-    <div class="header">
-        <h1>${report.title}</h1>
-        <p>Generated: ${report.generatedAt}</p>
-    </div>
+    let html = '<!DOCTYPE html><html><head>';
+    html += '<title>' + report.title + '</title>';
+    html += '<style>';
+    html += 'body { font-family: Arial, sans-serif; margin: 20px; }';
+    html += '.header { background: #007bff; color: white; padding: 20px; }';
+    html += '.section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }';
+    html += '.api-call { margin: 10px 0; padding: 10px; background: #f8f9fa; }';
+    html += '.timestamp { color: #666; font-size: 0.9em; }';
+    html += 'pre { background: #f1f1f1; padding: 10px; overflow-x: auto; }';
+    html += '</style></head><body>';
     
-    <div class="section">
-        <h2>Summary</h2>
-        <p>Total API Calls: ${report.summary.totalAPICalls}</p>
-        <p>Services Used: ${report.summary.servicesUsed.join(', ')}</p>
-        <p>Time Range: ${report.summary.timeRange.start} - ${report.summary.timeRange.end}</p>
-    </div>
+    html += '<div class="header">';
+    html += '<h1>' + report.title + '</h1>';
+    html += '<p>Generated: ' + report.generatedAt + '</p>';
+    html += '</div>';
     
-    ${Object.entries(report.details).map(([service, data]) => `
-        <div class="section">
-            <h2>${service.toUpperCase()} Service</h2>
-            <p>Total Calls: ${data.callCount}</p>
-            ${data.operations.map(op => `
-                <div class="api-call">
-                    <strong>[${op.method}]</strong> ${op.url}
-                    <div class="timestamp">${op.timestamp}</div>
-                    ${op.bodyPreview ? `<pre>${op.bodyPreview}...</pre>` : ''}
-                </div>
-            `).join('')}
-        </div>
-    `).join('')}
-</body>
-</html>`;
+    html += '<div class="section">';
+    html += '<h2>Summary</h2>';
+    html += '<p>Total API Calls: ' + report.summary.totalAPICalls + '</p>';
+    html += '<p>Services Used: ' + report.summary.servicesUsed.join(', ') + '</p>';
+    html += '<p>Time Range: ' + report.summary.timeRange.start + ' - ' + report.summary.timeRange.end + '</p>';
+    html += '</div>';
+    
+    Object.entries(report.details).forEach(([service, data]) => {
+        html += '<div class="section">';
+        html += '<h2>' + service.toUpperCase() + ' Service</h2>';
+        html += '<p>Total Calls: ' + data.callCount + '</p>';
+        
+        data.operations.forEach(op => {
+            html += '<div class="api-call">';
+            html += '<strong>[' + op.method + ']</strong> ' + op.url;
+            html += '<div class="timestamp">' + op.timestamp + '</div>';
+            if (op.bodyPreview) {
+                html += '<pre>' + op.bodyPreview + '...</pre>';
+            }
+            html += '</div>';
+        });
+        
+        html += '</div>';
+    });
+    
+    html += '</body></html>';
+    return html;
 }
 
 console.log('Available evidence commands:');
