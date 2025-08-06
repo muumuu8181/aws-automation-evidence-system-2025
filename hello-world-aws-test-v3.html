@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWS Evidence - Hello World Test v3 (Bookmarklet)</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 900px; margin: 0 auto; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .warning { background-color: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        button { padding: 10px 20px; margin: 10px 5px; cursor: pointer; }
+        pre { background-color: #f8f9fa; padding: 15px; border-radius: 5px; overflow-x: auto; }
+        .bookmarklet { background-color: #e7f3ff; padding: 15px; margin: 15px 0; border-radius: 5px; }
+        .bookmarklet-code { background-color: #f1f1f1; padding: 10px; font-family: monospace; word-break: break-all; }
+        .step { margin: 15px 0; padding: 15px; border-left: 4px solid #007bff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AWS Evidence System - Hello World Test v3</h1>
+        <p><strong>ブックマークレット方式：AWSログイン済みセッションを利用</strong></p>
+        
+        <div class="info">
+            <h3>🎯 正しい使用方法:</h3>
+            <div class="step">
+                <strong>ステップ1:</strong> AWS Management Console (https://console.aws.amazon.com) にログイン
+            </div>
+            <div class="step">
+                <strong>ステップ2:</strong> ログイン後、同じブラウザの新しいタブでこのページを開く
+            </div>
+            <div class="step">
+                <strong>ステップ3:</strong> 下のブックマークレットコードをコピーしてアドレスバーに貼り付けて実行
+            </div>
+        </div>
+
+        <div class="bookmarklet">
+            <h3>📑 ブックマークレット（コピーしてアドレスバーで実行）:</h3>
+            <div class="bookmarklet-code" id="bookmarklet-code" onclick="copyBookmarklet()">
+                javascript:(function(){var script=document.createElement('script');script.src='https://sdk.amazonaws.com/js/aws-sdk-2.1542.0.min.js';document.head.appendChild(script);script.onload=function(){AWS.config.region='ap-northeast-1';AWS.config.credentials=new AWS.CognitoIdentityCredentials({IdentityPoolId:'dummy'});var sts=new AWS.STS();sts.getCallerIdentity(function(err,data){if(err){alert('❌ 認証エラー: '+JSON.stringify(err));}else{alert('✅ 認証成功!\nAccount: '+data.Account+'\nARN: '+data.Arn);}});};})();
+            </div>
+            <p><small>👆 クリックでコピーできます</small></p>
+        </div>
+
+        <div class="warning">
+            <h3>⚠️ ブックマークレットが動かない場合の代替方法:</h3>
+            <p>下のボタンを順番に試してください（AWS Console タブを開いた状態で）</p>
+        </div>
+
+        <div id="status-area"></div>
+        
+        <button onclick="testMethod1()">方法1: 直接API呼び出し</button>
+        <button onclick="testMethod2()">方法2: フェッチAPI使用</button>
+        <button onclick="testMethod3()">方法3: XHR使用</button>
+        <button onclick="clearResults()">結果クリア</button>
+        
+        <div id="results"></div>
+
+        <div class="info">
+            <h3>📝 技術的説明:</h3>
+            <ul>
+                <li><strong>セキュリティ:</strong> 既存のAWSログインセッションを利用するため安全</li>
+                <li><strong>認証情報:</strong> 入力不要、ブラウザのセッションクッキーを自動利用</li>
+                <li><strong>制限:</strong> 同じブラウザ、同じオリジンでのみ動作</li>
+                <li><strong>対象:</strong> ログイン済みのAWSアカウントと同じアクセス権限</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function showStatus(message, type = 'info') {
+            const statusArea = document.getElementById('status-area');
+            statusArea.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        function addResult(title, content) {
+            const results = document.getElementById('results');
+            const resultDiv = document.createElement('div');
+            resultDiv.innerHTML = `
+                <h3>${title}</h3>
+                <pre>${content}</pre>
+            `;
+            results.appendChild(resultDiv);
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+            document.getElementById('status-area').innerHTML = '';
+        }
+
+        function copyBookmarklet() {
+            const code = document.getElementById('bookmarklet-code').textContent;
+            navigator.clipboard.writeText(code).then(function() {
+                showStatus('✅ ブックマークレットコードをクリップボードにコピーしました', 'success');
+            }).catch(function() {
+                showStatus('⚠️ 手動でコードをコピーしてください', 'warning');
+            });
+        }
+
+        // 方法1: AWS Console の認証情報を直接利用する試み
+        function testMethod1() {
+            showStatus('方法1: AWSコンソール認証確認中...', 'info');
+            
+            // AWS Console のセッションストレージやクッキーから認証情報を取得を試行
+            try {
+                const awsCredentials = sessionStorage.getItem('aws-credentials') || 
+                                     localStorage.getItem('aws-credentials') ||
+                                     document.cookie;
+                
+                if (awsCredentials) {
+                    showStatus('✅ 何らかの AWS 関連情報を検出', 'success');
+                    addResult('検出された情報', awsCredentials.substring(0, 200) + '...');
+                } else {
+                    showStatus('❌ AWS認証情報が検出されませんでした', 'error');
+                    addResult('方法1結果', 'セッションストレージ、ローカルストレージ、クッキーにAWS認証情報なし');
+                }
+            } catch (error) {
+                showStatus('❌ 方法1でエラーが発生しました', 'error');
+                addResult('エラー詳細', JSON.stringify(error, null, 2));
+            }
+        }
+
+        // 方法2: Fetch APIでAWS APIに直接リクエスト
+        function testMethod2() {
+            showStatus('方法2: フェッチAPIでAWS STSを呼び出し中...', 'info');
+            
+            const stsUrl = 'https://sts.ap-northeast-1.amazonaws.com/';
+            const params = 'Action=GetCallerIdentity&Version=2011-06-15';
+            
+            fetch(stsUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: params,
+                credentials: 'include'  // クッキーを含める
+            })
+            .then(response => response.text())
+            .then(data => {
+                if (data.includes('SignatureDoesNotMatch') || data.includes('AccessDenied')) {
+                    showStatus('❌ 認証に失敗しました（CORS制限またはセッション問題）', 'error');
+                    addResult('方法2結果', data.substring(0, 500) + '...');
+                } else {
+                    showStatus('✅ AWS APIから応答を受信', 'success');
+                    addResult('AWS STS応答', data);
+                }
+            })
+            .catch(error => {
+                showStatus('❌ フェッチAPIでエラーが発生（CORS制限の可能性）', 'error');
+                addResult('フェッチエラー', error.message);
+            });
+        }
+
+        // 方法3: XMLHttpRequestを使用
+        function testMethod3() {
+            showStatus('方法3: XHRでブラウザ環境確認中...', 'info');
+            
+            try {
+                // 現在のページがAWS Console上で実行されているかチェック
+                const isAWSConsole = window.location.hostname.includes('console.aws.amazon.com') ||
+                                   window.location.hostname.includes('amazonaws.com');
+                
+                if (isAWSConsole) {
+                    showStatus('✅ AWS Console上で実行されています', 'success');
+                    addResult('実行環境', `
+ホスト名: ${window.location.hostname}
+URL: ${window.location.href}
+Referrer: ${document.referrer}
+User Agent: ${navigator.userAgent}
+                    `);
+                } else {
+                    showStatus('⚠️ AWS Console外で実行されています', 'warning');
+                    addResult('実行環境', `
+現在のホスト名: ${window.location.hostname}
+推奨: AWS Console (console.aws.amazon.com) で実行してください
+                    `);
+                }
+                
+                // ブラウザのセキュリティ情報
+                addResult('ブラウザセキュリティ情報', `
+Same Origin Policy: ${window.location.protocol}//${window.location.host}
+HTTPS: ${window.location.protocol === 'https:' ? 'Yes' : 'No'}
+Cookies enabled: ${navigator.cookieEnabled}
+                `);
+                
+            } catch (error) {
+                showStatus('❌ 方法3でエラーが発生しました', 'error');
+                addResult('エラー詳細', JSON.stringify(error, null, 2));
+            }
+        }
+
+        // ページ読み込み時の初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            showStatus('AWS Evidence System v3 - ブックマークレット方式 準備完了', 'info');
+        });
+    </script>
+</body>
+</html>
