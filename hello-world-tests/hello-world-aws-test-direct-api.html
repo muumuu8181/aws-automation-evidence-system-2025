@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWS Evidence - Direct API Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f5f5f5; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; margin: -30px -30px 30px -30px; border-radius: 8px 8px 0 0; }
+        .code-block { background-color: #2d3748; color: #e2e8f0; padding: 20px; border-radius: 5px; font-family: 'Consolas', 'Monaco', monospace; font-size: 14px; line-height: 1.6; overflow-x: auto; }
+        .copy-button { background-color: #007bff; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin: 10px 0; }
+        .copy-button:hover { background-color: #0056b3; }
+        .success { background-color: #d4edda; color: #155724; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        .warning { background-color: #fff3cd; color: #856404; padding: 15px; border-radius: 5px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 AWS Evidence - Direct API Test</h1>
+            <p><strong>CSP制限対応版：外部SDK不要</strong></p>
+        </div>
+        
+        <div class="success">
+            <h3>この方式の利点:</h3>
+            <ul>
+                <li>✅ 外部スクリプト読み込み不要</li>
+                <li>✅ CSPエラーなし</li>
+                <li>✅ 企業環境完全対応</li>
+                <li>✅ ブラウザ標準API使用</li>
+            </ul>
+        </div>
+
+        <div class="warning">
+            <h3>使用方法:</h3>
+            <ol>
+                <li>AWS Management Console にログイン</li>
+                <li>F12 → Consoleタブを開く</li>
+                <li>以下のコードを貼り付けて実行</li>
+            </ol>
+        </div>
+
+        <h3>📋 AWS STS認証テスト</h3>
+        <button class="copy-button" onclick="copyCode('sts-test')">📋 STSテストをコピー</button>
+        
+        <div class="code-block" id="sts-test">
+console.log('AWS STS Direct API Test');
+
+fetch('https://sts.ap-northeast-1.amazonaws.com/', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Accept': 'application/json'
+    },
+    body: 'Action=GetCallerIdentity&Version=2011-06-15',
+    credentials: 'include'
+})
+.then(response => {
+    console.log('Response status:', response.status);
+    return response.text();
+})
+.then(data => {
+    console.log('AWS STS Response:');
+    console.log(data);
+    
+    if (data.includes('<Account>')) {
+        const accountMatch = data.match(/<Account>(\d+)<\/Account>/);
+        const arnMatch = data.match(/<Arn>([^<]+)<\/Arn>/);
+        const userIdMatch = data.match(/<UserId>([^<]+)<\/UserId>/);
+        
+        if (accountMatch) console.log('Account:', accountMatch[1]);
+        if (arnMatch) console.log('ARN:', arnMatch[1]);
+        if (userIdMatch) console.log('User ID:', userIdMatch[1]);
+    }
+})
+.catch(error => {
+    console.error('STS Error:', error);
+});
+        </div>
+
+        <h3>📋 S3バケット一覧テスト</h3>
+        <button class="copy-button" onclick="copyCode('s3-test')">📋 S3テストをコピー</button>
+        
+        <div class="code-block" id="s3-test">
+console.log('S3 Direct API Test');
+
+fetch('https://s3.ap-northeast-1.amazonaws.com/', {
+    method: 'GET',
+    credentials: 'include'
+})
+.then(response => {
+    console.log('S3 Response status:', response.status);
+    return response.text();
+})
+.then(data => {
+    console.log('S3 Response:');
+    console.log(data);
+    
+    if (data.includes('<Bucket>')) {
+        const bucketMatches = data.match(/<Name>([^<]+)<\/Name>/g);
+        if (bucketMatches) {
+            console.log(`Found ${bucketMatches.length} buckets:`);
+            bucketMatches.forEach((match, index) => {
+                const bucketName = match.replace(/<Name>|<\/Name>/g, '');
+                console.log(`${index + 1}. ${bucketName}`);
+            });
+        }
+    }
+})
+.catch(error => {
+    console.error('S3 Error:', error);
+});
+        </div>
+
+        <h3>📋 CloudWatch Logs テスト</h3>
+        <button class="copy-button" onclick="copyCode('logs-test')">📋 CloudWatchテストをコピー</button>
+        
+        <div class="code-block" id="logs-test">
+console.log('CloudWatch Logs Direct API Test');
+
+const logsPayload = JSON.stringify({
+    "limit": 10
+});
+
+fetch('https://logs.ap-northeast-1.amazonaws.com/', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/x-amz-json-1.1',
+        'X-Amz-Target': 'Logs_20140328.DescribeLogGroups'
+    },
+    body: logsPayload,
+    credentials: 'include'
+})
+.then(response => {
+    console.log('CloudWatch Logs Response status:', response.status);
+    return response.json();
+})
+.then(data => {
+    console.log('CloudWatch Logs Response:');
+    console.log(data);
+    
+    if (data.logGroups) {
+        console.log(`Found ${data.logGroups.length} log groups:`);
+        data.logGroups.forEach((group, index) => {
+            console.log(`${index + 1}. ${group.logGroupName}`);
+        });
+    }
+})
+.catch(error => {
+    console.error('CloudWatch Logs Error:', error);
+});
+        </div>
+
+        <h3>📋 まとめテスト（全部実行）</h3>
+        <button class="copy-button" onclick="copyCode('all-test')">📋 全テストをコピー</button>
+        
+        <div class="code-block" id="all-test">
+async function runAllAWSTests() {
+    console.log('=== AWS Evidence System - Complete Test ===');
+    
+    try {
+        console.log('\n1. STS Authentication Test...');
+        const stsResponse = await fetch('https://sts.ap-northeast-1.amazonaws.com/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'Action=GetCallerIdentity&Version=2011-06-15',
+            credentials: 'include'
+        });
+        const stsData = await stsResponse.text();
+        console.log('STS Status:', stsResponse.status);
+        
+        if (stsData.includes('<Account>')) {
+            console.log('✅ Authentication successful');
+            const account = stsData.match(/<Account>(\d+)<\/Account>/)?.[1];
+            console.log('Account ID:', account);
+        } else {
+            console.log('❌ Authentication failed');
+        }
+        
+        console.log('\n2. S3 Buckets Test...');
+        const s3Response = await fetch('https://s3.ap-northeast-1.amazonaws.com/', {
+            method: 'GET',
+            credentials: 'include'
+        });
+        const s3Data = await s3Response.text();
+        console.log('S3 Status:', s3Response.status);
+        
+        const buckets = s3Data.match(/<Name>([^<]+)<\/Name>/g);
+        if (buckets) {
+            console.log(`✅ Found ${buckets.length} S3 buckets`);
+        } else {
+            console.log('⚠️ No S3 buckets or access denied');
+        }
+        
+        console.log('\n=== Test Complete ===');
+        
+    } catch (error) {
+        console.error('Test Error:', error);
+    }
+}
+
+runAllAWSTests();
+        </div>
+
+        <div class="warning">
+            <h3>期待される結果:</h3>
+            <ul>
+                <li><strong>STS成功:</strong> Account ID, ARN, User IDが表示</li>
+                <li><strong>S3成功:</strong> バケット一覧が表示</li>
+                <li><strong>権限エラー:</strong> 403 Forbidden（正常、権限不足）</li>
+                <li><strong>CORS エラー:</strong> Same-origin policy violation</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function copyCode(elementId) {
+            const codeElement = document.getElementById(elementId);
+            const text = codeElement.textContent;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                const button = event.target;
+                const originalText = button.textContent;
+                button.textContent = '✅ コピー完了!';
+                button.style.backgroundColor = '#28a745';
+                
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.style.backgroundColor = '#007bff';
+                }, 2000);
+            }).catch(() => {
+                alert('手動でコードを選択してコピーしてください');
+            });
+        }
+    </script>
+</body>
+</html>
