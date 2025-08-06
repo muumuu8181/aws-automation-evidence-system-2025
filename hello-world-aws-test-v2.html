@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWS Evidence - Hello World Test v2</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 900px; margin: 0 auto; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .warning { background-color: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        button { padding: 10px 20px; margin: 10px 5px; cursor: pointer; }
+        input { padding: 8px; margin: 5px; width: 200px; }
+        pre { background-color: #f8f9fa; padding: 15px; border-radius: 5px; overflow-x: auto; }
+        .credential-form { border: 1px solid #ddd; padding: 20px; margin: 20px 0; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AWS Evidence System - Hello World Test v2</h1>
+        
+        <div class="warning">
+            <h3>⚠️ 重要な注意事項:</h3>
+            <p>ブラウザから直接AWS APIを呼び出すには、明示的な認証情報が必要です。<br>
+            AWSコンソールのセッションは自動的には利用できません。</p>
+        </div>
+
+        <div class="credential-form">
+            <h3>AWS認証情報設定:</h3>
+            <p><strong>方法1:</strong> 一時的なアクセスキーを使用（推奨）</p>
+            <div>
+                <label>Access Key ID:</label><br>
+                <input type="text" id="accessKey" placeholder="AKIAXXXXXXXXXXXXXXXX">
+            </div>
+            <div>
+                <label>Secret Access Key:</label><br>
+                <input type="password" id="secretKey" placeholder="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">
+            </div>
+            <div>
+                <label>Session Token (一時的認証情報の場合):</label><br>
+                <input type="password" id="sessionToken" placeholder="オプション">
+            </div>
+            <div>
+                <label>Region:</label><br>
+                <input type="text" id="region" value="ap-northeast-1" placeholder="ap-northeast-1">
+            </div>
+            <button onclick="configureAWS()">AWS設定を適用</button>
+        </div>
+
+        <div class="info">
+            <h3>使用方法:</h3>
+            <ol>
+                <li><strong>AWS CLI</strong> で <code>aws configure</code> または <code>aws sts get-session-token</code> を実行</li>
+                <li>取得した認証情報を上記フォームに入力</li>
+                <li>「AWS設定を適用」をクリック</li>
+                <li>「認証テスト」で動作確認</li>
+                <li>「S3バケット一覧」で実際のAPI呼び出しをテスト</li>
+            </ol>
+        </div>
+
+        <div id="status-area"></div>
+        
+        <button onclick="testAuth()">1. 認証テスト</button>
+        <button onclick="listS3Buckets()">2. S3バケット一覧取得</button>
+        <button onclick="getCallerIdentity()">3. 現在のユーザー情報確認</button>
+        <button onclick="clearResults()">結果クリア</button>
+        
+        <div id="results"></div>
+    </div>
+
+    <!-- AWS SDK v2 -->
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1542.0.min.js"></script>
+    
+    <script>
+        let awsConfigured = false;
+
+        function showStatus(message, type = 'info') {
+            const statusArea = document.getElementById('status-area');
+            statusArea.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        function addResult(title, content) {
+            const results = document.getElementById('results');
+            const resultDiv = document.createElement('div');
+            resultDiv.innerHTML = `
+                <h3>${title}</h3>
+                <pre>${content}</pre>
+            `;
+            results.appendChild(resultDiv);
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+            document.getElementById('status-area').innerHTML = '';
+        }
+
+        function configureAWS() {
+            const accessKey = document.getElementById('accessKey').value.trim();
+            const secretKey = document.getElementById('secretKey').value.trim();
+            const sessionToken = document.getElementById('sessionToken').value.trim();
+            const region = document.getElementById('region').value.trim() || 'ap-northeast-1';
+
+            if (!accessKey || !secretKey) {
+                showStatus('❌ Access Key IDとSecret Access Keyは必須です', 'error');
+                return;
+            }
+
+            try {
+                // AWS認証情報を設定
+                const credentials = {
+                    accessKeyId: accessKey,
+                    secretAccessKey: secretKey,
+                    region: region
+                };
+
+                if (sessionToken) {
+                    credentials.sessionToken = sessionToken;
+                }
+
+                AWS.config.update(credentials);
+                awsConfigured = true;
+                
+                showStatus('✅ AWS認証情報が設定されました', 'success');
+                addResult('設定内容', `
+Region: ${region}
+Access Key: ${accessKey.substring(0, 10)}...
+${sessionToken ? 'Session Token: 設定済み' : 'Session Token: なし'}
+                `);
+                
+            } catch (error) {
+                showStatus('❌ AWS設定中にエラーが発生しました', 'error');
+                addResult('設定エラー', JSON.stringify(error, null, 2));
+            }
+        }
+
+        async function testAuth() {
+            if (!awsConfigured) {
+                showStatus('⚠️ まずAWS認証情報を設定してください', 'warning');
+                return;
+            }
+            
+            showStatus('認証テスト中...', 'info');
+            
+            try {
+                const sts = new AWS.STS();
+                
+                sts.getCallerIdentity((err, data) => {
+                    if (err) {
+                        showStatus('❌ 認証に失敗しました', 'error');
+                        addResult('認証エラー', JSON.stringify(err, null, 2));
+                    } else {
+                        showStatus('✅ 認証テスト成功！', 'success');
+                        addResult('認証情報', `
+Account: ${data.Account}
+User ARN: ${data.Arn}
+User ID: ${data.UserId}
+                        `);
+                    }
+                });
+                
+            } catch (error) {
+                showStatus('❌ 認証テスト中にエラーが発生しました', 'error');
+                addResult('エラー詳細', JSON.stringify(error, null, 2));
+            }
+        }
+
+        async function getCallerIdentity() {
+            if (!awsConfigured) {
+                showStatus('⚠️ まずAWS認証情報を設定してください', 'warning');
+                return;
+            }
+            
+            showStatus('現在のユーザー情報を取得中...', 'info');
+            
+            try {
+                const sts = new AWS.STS();
+                
+                sts.getCallerIdentity((err, data) => {
+                    if (err) {
+                        showStatus('❌ ユーザー情報の取得に失敗しました', 'error');
+                        addResult('エラー詳細', JSON.stringify(err, null, 2));
+                    } else {
+                        showStatus('✅ ユーザー情報を取得しました', 'success');
+                        addResult('現在のユーザー情報', JSON.stringify(data, null, 2));
+                    }
+                });
+                
+            } catch (error) {
+                showStatus('❌ ユーザー情報取得中にエラーが発生しました', 'error');
+                addResult('エラー詳細', JSON.stringify(error, null, 2));
+            }
+        }
+
+        async function listS3Buckets() {
+            if (!awsConfigured) {
+                showStatus('⚠️ まずAWS認証情報を設定してください', 'warning');
+                return;
+            }
+            
+            showStatus('S3バケット一覧を取得中...', 'info');
+            
+            try {
+                const s3 = new AWS.S3();
+                
+                s3.listBuckets((err, data) => {
+                    if (err) {
+                        showStatus('❌ S3バケット一覧の取得に失敗しました', 'error');
+                        addResult('S3エラー詳細', JSON.stringify(err, null, 2));
+                    } else {
+                        showStatus(`✅ S3バケット一覧を取得しました (${data.Buckets.length}個)`, 'success');
+                        
+                        if (data.Buckets.length > 0) {
+                            const bucketList = data.Buckets.map(bucket => 
+                                `${bucket.Name} (作成日: ${bucket.CreationDate})`
+                            ).join('\n');
+                            addResult('S3バケット一覧', bucketList);
+                        } else {
+                            addResult('S3バケット一覧', '(バケットが存在しません)');
+                        }
+                    }
+                });
+                
+            } catch (error) {
+                showStatus('❌ S3バケット取得中にエラーが発生しました', 'error');
+                addResult('エラー詳細', JSON.stringify(error, null, 2));
+            }
+        }
+
+        // ページ読み込み時の初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            showStatus('AWS Evidence System - Hello World Test v2 準備完了', 'info');
+        });
+    </script>
+</body>
+</html>
