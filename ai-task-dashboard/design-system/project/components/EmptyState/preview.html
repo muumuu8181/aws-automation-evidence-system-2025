@@ -1,0 +1,14 @@
+<!-- @dsCard group="フィードバック" height=400 -->
+<!doctype html>
+<html lang="ja">
+<head><meta charset="utf-8"><title>EmptyState</title>
+<style>.pv{display:flex;flex-direction:column;gap:var(--space-3);padding:var(--space-4)}</style></head>
+<body>
+<div class="pv" id="root"></div>
+<script>
+  var A = window.AIDash, root = document.getElementById('root');
+  root.appendChild(A.EmptyState({ title: 'まだタスクがありません', body: 'Claude・Codex・GLM に仕事を頼むと、ここに状況が並びます。止まっている仕事があれば、いちばん上に出ます。' }));
+  root.appendChild(A.EmptyState({ title: '条件に合うタスクはありません', body: '絞り込みや検索の条件を変えるか、解除してください。', action: { label: '絞り込みを解除', variant: 'secondary' } }));
+</script>
+</body>
+</html>

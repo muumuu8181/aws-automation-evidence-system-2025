@@ -1,0 +1,28 @@
+<!-- @dsCard group="タスク" height=560 subtitle="4つの状態と長いタスク名。タスク名を押すと開閉" -->
+<!doctype html>
+<html lang="ja">
+<head><meta charset="utf-8"><title>TaskRow</title>
+<style>.pv{padding:var(--space-4)} .ad-list{margin:0;padding:0;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-lg)} .ad-list > .ad-row + .ad-row{border-top:1px solid var(--line)} .pv-detail{margin:0;color:var(--ink-muted)}</style></head>
+<body>
+<div class="pv"><ul class="ad-list" id="root"></ul></div>
+<script>
+  var A = window.AIDash, root = document.getElementById('root'), now = Date.now(), M = 60000;
+  var tasks = [
+    { id: 'T-102', agent: 'codex', status: 'wait', title: 'ログイン画面のバリデーション修正', since: now - 18 * M, updatedAt: now - 18 * M, question: { text: 'パスワードの最小文字数を12文字に変えると、既存のテストが6件失敗します。テストも合わせて更新してよいですか？' } },
+    { id: 'T-104', agent: 'codex', status: 'stop', title: '顧客データ移行スクリプトのリファクタリングと、旧フォーマット（2019年版CSV・Shift_JIS・列順不定）から新スキーマへの変換テスト追加 — migrate_legacy_customer_records_v2.py の分割と型付けを含む', since: now - 26 * M, updatedAt: now - 26 * M, error: { message: 'テストの実行環境がタイムアウトしました（30分の上限）。' } },
+    { id: 'T-106', agent: 'claude', status: 'run', title: 'ブログ記事「個人開発の1年を振り返る」の下書き', updatedAt: now - 3 * M, progress: { done: 3, total: 5, current: '第3章「失敗したこと」を執筆中' } },
+    { id: 'T-110', agent: 'codex', status: 'done', title: '依存パッケージの更新（npm audit の警告対応）', updatedAt: now - 35 * M, result: { summary: '警告12件をすべて解消し、テスト214件が成功しました。' } }
+  ];
+  var open = null;
+  function draw() {
+    root.textContent = '';
+    tasks.forEach(function (t) {
+      root.appendChild(A.TaskRow({ task: t, now: now, expanded: open === t.id,
+        onToggle: function (id) { open = open === id ? null : id; draw(); },
+        detail: A.h('p', { class: 'pv-detail t-body' }, 'ここに詳細（回答フォーム・停止理由・進み具合・成果）が入る。') }));
+    });
+  }
+  draw();
+</script>
+</body>
+</html>

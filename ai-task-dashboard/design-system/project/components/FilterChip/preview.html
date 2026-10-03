@@ -1,0 +1,21 @@
+<!-- @dsCard group="操作" height=80 -->
+<!doctype html>
+<html lang="ja">
+<head><meta charset="utf-8"><title>FilterChip</title>
+<style>.pv{display:flex;flex-wrap:wrap;gap:var(--space-2);align-items:center;padding:var(--space-4)}</style></head>
+<body>
+<div class="pv" id="root" role="group" aria-label="担当AI"></div>
+<script>
+  var A = window.AIDash, root = document.getElementById('root');
+  var sel = null;
+  function draw() {
+    root.textContent = '';
+    root.appendChild(A.FilterChip({ label: 'すべて', count: 12, pressed: !sel, onClick: function () { sel = null; draw(); } }));
+    Object.keys(A.AGENTS).forEach(function (k) {
+      root.appendChild(A.FilterChip({ label: A.AGENTS[k].name, count: 4, pressed: sel === k, onClick: function () { sel = sel === k ? null : k; draw(); } }));
+    });
+  }
+  draw();
+</script>
+</body>
+</html>

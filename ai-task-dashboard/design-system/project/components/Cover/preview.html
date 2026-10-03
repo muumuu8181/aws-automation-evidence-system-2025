@@ -1,0 +1,62 @@
+<!-- @dsCard height=288 -->
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>AIタスク ダッシュボード</title>
+<style>
+  html, body { margin: 0; height: 100%; }
+  body { background: var(--bg); color: var(--ink); font-family: var(--font-sans); overflow: hidden; }
+  .cover { position: relative; width: 960px; height: 288px; overflow: hidden; }
+  .band { position: absolute; top: 0; left: 0; width: 960px; height: 120px; }
+  .band svg { display: block; width: 960px; height: 120px; }
+  .wait { fill: var(--wait); }
+  .stop { fill: var(--stop); }
+  .run { fill: var(--run); }
+  .done { fill: var(--done); }
+  .blk { rx: var(--radius-lg); }
+  .disc { stroke-width: 1px; }
+  .disc.wait { stroke: var(--wait-text); }
+  .disc.stop { stroke: var(--stop-text); }
+  .disc.run { stroke: var(--run-text); }
+  .disc.done { stroke: var(--done-text); }
+  .words { position: absolute; left: var(--space-5); right: var(--space-5); bottom: var(--space-5); }
+  .name { margin: 0; font-size: 64px; line-height: .95; font-weight: 700; letter-spacing: -.01em; color: var(--ink); white-space: nowrap; }
+  .tag { margin: var(--space-2) 0 0 2px; max-width: 440px; font-size: 14px; line-height: 20px; color: var(--ink-muted); }
+</style>
+</head>
+<body>
+<div class="cover">
+<div class="band" aria-hidden="true">
+<svg viewBox="0 0 960 120" width="960" height="120">
+<!--
+  blocks      wait 280 wide (the user's turn, the system's reason to exist) · stop 96 · run 160 · done 48 — the four status fills, in list order, bled 8px off the top, bottoms on one line at 112; together about a quarter of 960×288
+  arrangement a strip of unequal bands across the top (the top-band skeleton: the name is too wide for the 440px zone at 64px)
+  pattern     discs, from the README's one round thing ("radius-full: the status marks only"): twelve 18px marks (size mark), one per demo task — 3 wait, 2 stop, 4 run, 3 done in list order — each with its 1px *-text edge, at a space-5 pitch on the ground
+  scales      gutters space-2; block widths in space-2 multiples; block corners radius-lg; disc pitch space-5, diameter mark, edge 1px *-text as in StatusMark
+-->
+<rect class="wait blk" x="24" y="-8" width="280" height="120" rx="10"/>
+<rect class="stop blk" x="312" y="-8" width="96" height="120" rx="10"/>
+<rect class="run blk" x="416" y="-8" width="160" height="120" rx="10"/>
+<rect class="done blk" x="584" y="-8" width="48" height="120" rx="10"/>
+<circle class="disc wait" cx="660" cy="56" r="8.5"/>
+<circle class="disc wait" cx="684" cy="56" r="8.5"/>
+<circle class="disc wait" cx="708" cy="56" r="8.5"/>
+<circle class="disc stop" cx="732" cy="56" r="8.5"/>
+<circle class="disc stop" cx="756" cy="56" r="8.5"/>
+<circle class="disc run" cx="780" cy="56" r="8.5"/>
+<circle class="disc run" cx="804" cy="56" r="8.5"/>
+<circle class="disc run" cx="828" cy="56" r="8.5"/>
+<circle class="disc run" cx="852" cy="56" r="8.5"/>
+<circle class="disc done" cx="876" cy="56" r="8.5"/>
+<circle class="disc done" cx="900" cy="56" r="8.5"/>
+<circle class="disc done" cx="924" cy="56" r="8.5"/>
+</svg>
+</div>
+<div class="words">
+<h1 class="name">AIタスク ダッシュボード</h1>
+<p class="tag">止まっている仕事と、あなたが次に押すボタンを、最初の3秒で。</p>
+</div>
+</div>
+</body>
+</html>

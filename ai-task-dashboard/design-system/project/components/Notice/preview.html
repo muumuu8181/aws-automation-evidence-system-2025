@@ -1,0 +1,15 @@
+<!-- @dsCard group="フィードバック" height=300 -->
+<!doctype html>
+<html lang="ja">
+<head><meta charset="utf-8"><title>Notice</title>
+<style>.pv{display:flex;flex-direction:column;gap:var(--space-3);padding:var(--space-4)}</style></head>
+<body>
+<div class="pv" id="root"></div>
+<script>
+  var A = window.AIDash, root = document.getElementById('root');
+  root.appendChild(A.Notice({ tone: 'error', title: 'タスク一覧を更新できませんでした', body: 'サーバーに接続できません（E-NET-503）。表示しているのは 10/3 13:55 時点の内容で、最新ではない可能性があります。', actions: [{ label: '再読み込み', variant: 'secondary' }] }));
+  root.appendChild(A.Notice({ tone: 'success', role: 'note', title: '回答を送信しました', body: 'Codex が作業を再開しました。状態は「作業中」に変わりました。', actions: [{ label: '取り消す', variant: 'secondary' }, { label: '閉じる', variant: 'quiet' }] }));
+  root.appendChild(A.Notice({ tone: 'info', role: 'note', body: 'このプロトタイプのデータは架空です。' }));
+</script>
+</body>
+</html>

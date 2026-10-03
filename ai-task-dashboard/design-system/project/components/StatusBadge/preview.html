@@ -1,0 +1,14 @@
+<!-- @dsCard group="状態" height=96 subtitle="4つの状態。色・記号・言葉の3つで区別する" -->
+<!doctype html>
+<html lang="ja">
+<head><meta charset="utf-8"><title>StatusBadge</title>
+<style>.pv{display:flex;flex-wrap:wrap;gap:var(--space-3);align-items:center;padding:var(--space-4)}</style></head>
+<body>
+<div class="pv" id="root"></div>
+<script>
+  var A = window.AIDash, root = document.getElementById('root');
+  A.ORDER.forEach(function (s) { root.appendChild(A.StatusBadge({ status: s })); });
+  A.ORDER.forEach(function (s) { root.appendChild(A.StatusMark({ status: s, large: true })); });
+</script>
+</body>
+</html>

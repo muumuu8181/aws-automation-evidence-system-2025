@@ -1,0 +1,31 @@
+<!-- @dsCard group="フォーム" height=620 subtitle="未入力のまま「回答を送信」を押すとエラー表示" -->
+<!doctype html>
+<html lang="ja">
+<head><meta charset="utf-8"><title>AnswerForm</title>
+<style>.pv{padding:var(--space-4);max-width:640px}</style></head>
+<body>
+<div class="pv" id="root"></div>
+<script>
+  var A = window.AIDash, root = document.getElementById('root');
+  var draft = {}, error = null, busy = false, sent = false;
+  var question = { text: '「工数」の訳語をどれに統一しますか？', context: '原文に「工数」が14回出てきます。今は訳語が混在しているため、1つに揃えます。',
+    options: [{ id: 'a', label: 'person-hours', hint: '推奨。性別に中立な表現' }, { id: 'b', label: 'man-hours', hint: '従来よく使われる表現' }, { id: 'c', label: 'effort', hint: '数値を伴わない箇所向き' }] };
+  function draw() {
+    root.textContent = '';
+    if (sent) {
+      root.appendChild(A.Notice({ tone: 'success', title: '回答を送信しました', body: 'GLM が作業を再開しました。状態は「作業中」に変わりました。',
+        actions: [{ label: '取り消す', variant: 'secondary', onClick: function () { sent = false; draw(); } }] }));
+      return;
+    }
+    root.appendChild(A.AnswerForm({ id: 'T-103', agent: 'glm', question: question, draft: draft, error: error, busy: busy,
+      onChange: function (p) { for (var k in p) draft[k] = p[k]; if (error) { error = null; draw(); } },
+      onSubmit: function () {
+        if (!draft.option && !(draft.note || '').trim()) { error = '選択肢を1つ選ぶか、補足欄に回答を書いてください。'; draw(); return; }
+        busy = true; draw(); setTimeout(function () { busy = false; sent = true; draw(); }, 600);
+      },
+      onLater: function () {} }));
+  }
+  draw();
+</script>
+</body>
+</html>

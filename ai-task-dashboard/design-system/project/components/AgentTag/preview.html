@@ -1,0 +1,13 @@
+<!-- @dsCard group="タスク" height=72 -->
+<!doctype html>
+<html lang="ja">
+<head><meta charset="utf-8"><title>AgentTag</title>
+<style>.pv{display:flex;flex-wrap:wrap;gap:var(--space-2);align-items:center;padding:var(--space-4)}</style></head>
+<body>
+<div class="pv" id="root"></div>
+<script>
+  var A = window.AIDash, root = document.getElementById('root');
+  Object.keys(A.AGENTS).forEach(function (k) { root.appendChild(A.AgentTag({ agent: k })); });
+</script>
+</body>
+</html>

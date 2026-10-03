@@ -1,0 +1,21 @@
+<!-- @dsCard group="状態" height=168 subtitle="2枚目は絞り込み中" -->
+<!doctype html>
+<html lang="ja">
+<head><meta charset="utf-8"><title>SummaryTile</title>
+<style>.pv{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:var(--space-2);padding:var(--space-4)}</style></head>
+<body>
+<div class="pv" id="root"></div>
+<script>
+  var A = window.AIDash, root = document.getElementById('root');
+  var counts = { wait: 3, stop: 2, run: 4, done: 3 };
+  var pressed = 'stop';
+  function draw() {
+    root.textContent = '';
+    A.ORDER.forEach(function (s) {
+      root.appendChild(A.SummaryTile({ status: s, count: counts[s], pressed: pressed === s, onClick: function () { pressed = pressed === s ? null : s; draw(); } }));
+    });
+  }
+  draw();
+</script>
+</body>
+</html>

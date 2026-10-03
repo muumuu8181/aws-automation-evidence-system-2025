@@ -1,0 +1,19 @@
+<!-- @dsCard group="操作" height=120 subtitle="primary は「あなたの番」だけ" -->
+<!doctype html>
+<html lang="ja">
+<head><meta charset="utf-8"><title>Button</title>
+<style>.pv{display:flex;flex-wrap:wrap;gap:var(--space-2);align-items:center;padding:var(--space-4)}</style></head>
+<body>
+<div class="pv" id="root"></div>
+<script>
+  var A = window.AIDash, root = document.getElementById('root');
+  [
+    { label: '回答する', variant: 'primary' },
+    { label: '対処する', variant: 'secondary' },
+    { label: '閉じる', variant: 'quiet' },
+    { label: '回答を送信', variant: 'primary', busy: true, busyLabel: '送信中…' },
+    { label: '引き継ぐ', variant: 'secondary', disabled: true }
+  ].forEach(function (p) { root.appendChild(A.Button(p)); });
+</script>
+</body>
+</html>
